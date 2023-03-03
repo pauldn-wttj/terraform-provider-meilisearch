@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure MeilisearchProvider satisfies various provider interfaces.
@@ -53,6 +54,8 @@ func (p *MeilisearchProvider) Schema(ctx context.Context, req provider.SchemaReq
 }
 
 func (p *MeilisearchProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	tflog.Info(ctx, "Configuring Meilisearch client")
+
 	var config MeilisearchProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -60,9 +63,6 @@ func (p *MeilisearchProvider) Configure(ctx context.Context, req provider.Config
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// If practitioner provided a configuration value for any of the
-	// attributes, it must be a known value.
 
 	if config.Host.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
@@ -127,16 +127,24 @@ func (p *MeilisearchProvider) Configure(ctx context.Context, req provider.Config
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "meilisearch_host", host)
+	ctx = tflog.SetField(ctx, "meilisearch_api_key", apiKey)
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "meilisearch_api_key")
+
+	tflog.Debug(ctx, "Creating Meilisearch client")
+
 	// Create a new Meilisearch client using the configuration values
 	client := meilisearch.NewClient(meilisearch.ClientConfig{
 		Host:   host,
 		APIKey: apiKey,
 	})
 
-	// Make the HashiCups client available during DataSource and Resource
+	// Make the Meilisearch client available during DataSource and Resource
 	// type Configure methods.
 	resp.DataSourceData = client
 	resp.ResourceData = client
+
+	tflog.Info(ctx, "Configured Meilisearch client", map[string]any{"success": true})
 }
 
 func (p *MeilisearchProvider) Resources(ctx context.Context) []func() resource.Resource {
