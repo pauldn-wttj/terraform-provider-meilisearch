@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/meilisearch/meilisearch-go"
 )
@@ -45,7 +46,7 @@ func (d *keyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 		Description: "Manages a Meilisearch API key.",
 		Attributes: map[string]schema.Attribute{
 			"uid": schema.StringAttribute{
-				Computed: true,
+				Required: true,
 			},
 			"name": schema.StringAttribute{
 				Computed: true,
@@ -80,7 +81,17 @@ func (d *keyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 func (d *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state keyDataSourceModel
 
-	key, err := d.client.GetKey("be0730c4-fc8b-4d3f-831d-a3fcb7fe880d")
+	var identifier types.String
+
+	diags := req.Config.GetAttribute(ctx, path.Root("uid"), &identifier)
+
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	key, err := d.client.GetKey(identifier.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Meilisearch API key",
@@ -111,7 +122,7 @@ func (d *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	state = keyState
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
