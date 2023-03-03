@@ -12,3 +12,7 @@ provider "meilisearch" {
 }
 
 data "meilisearch_key" "main" {}
+
+output "main" {
+  value = data.meilisearch_key.main
+}
