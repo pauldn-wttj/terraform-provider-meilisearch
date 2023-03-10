@@ -6,6 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/meilisearch/meilisearch-go"
 )
@@ -51,6 +54,10 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			"uid": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Optional: true,
@@ -60,20 +67,35 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			},
 			"key": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"actions": schema.ListAttribute{
 				ElementType: types.StringType,
 				Required:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
 			},
 			"indexes": schema.ListAttribute{
 				ElementType: types.StringType,
 				Required:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
 			},
 			"expires_at": schema.StringAttribute{
 				Optional: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"created_at": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"updated_at": schema.StringAttribute{
 				Computed: true,
@@ -141,8 +163,8 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	plan.UID = types.StringValue(key.UID)
 	plan.Key = types.StringValue(key.Key)
-	plan.CreatedAt = types.StringValue(key.CreatedAt.String())
-	plan.UpdatedAt = types.StringValue(key.UpdatedAt.String())
+	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC850))
+	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC850))
 
 	if plan.ExpiresAt.IsNull() {
 		plan.ExpiresAt = types.StringNull()
@@ -184,8 +206,8 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		Name:        types.StringValue(key.Name),
 		Description: types.StringValue(key.Description),
 		Key:         types.StringValue(key.Key),
-		CreatedAt:   types.StringValue(key.CreatedAt.String()),
-		UpdatedAt:   types.StringValue(key.UpdatedAt.String()),
+		CreatedAt:   types.StringValue(key.CreatedAt.Format(time.RFC850)),
+		UpdatedAt:   types.StringValue(key.UpdatedAt.Format(time.RFC850)),
 	}
 
 	for _, action := range key.Actions {
@@ -199,7 +221,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	if key.ExpiresAt.IsZero() {
 		keyState.ExpiresAt = types.StringNull()
 	} else {
-		keyState.ExpiresAt = types.StringValue(key.ExpiresAt.String())
+		keyState.ExpiresAt = types.StringValue(key.ExpiresAt.Format(time.RFC850))
 	}
 
 	state = keyState
@@ -214,6 +236,77 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Retrieve values from plan
+	var plan keyResourceModel
+
+	diags := req.Plan.Get(ctx, &plan)
+
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Generate API request body from plan
+	var actions []string
+	var indexes []string
+	var expiresAt time.Time
+
+	for _, action := range plan.Actions {
+		actions = append(actions, action.ValueString())
+	}
+
+	for _, index := range plan.Indexes {
+		indexes = append(indexes, index.ValueString())
+	}
+
+	if !plan.ExpiresAt.IsNull() && plan.ExpiresAt.ValueString() != "" {
+		parsedExpiredAt, err := time.Parse("2006-01-02T15:04:05.000Z", plan.ExpiresAt.ValueString())
+
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating key",
+				"Could not parse expiresAt attribute",
+			)
+			return
+		}
+
+		expiresAt = parsedExpiredAt
+	}
+
+	updateKey := meilisearch.Key{
+		UID:         plan.UID.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Description: plan.Description.ValueString(),
+		Actions:     actions,
+		Indexes:     indexes,
+		ExpiresAt:   expiresAt,
+	}
+
+	// Update existing key
+	key, err := r.client.UpdateKey(plan.UID.ValueString(), &updateKey)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Updating Meilisearch Key",
+			"Could not update key, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	plan.UID = types.StringValue(key.UID)
+	plan.Key = types.StringValue(key.Key)
+	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC850))
+	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC850))
+
+	if plan.ExpiresAt.IsNull() {
+		plan.ExpiresAt = types.StringNull()
+	}
+
+	// Set refreshed state
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
