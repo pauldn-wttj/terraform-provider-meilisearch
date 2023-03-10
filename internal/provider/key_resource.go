@@ -246,40 +246,9 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	// Generate API request body from plan
-	var actions []string
-	var indexes []string
-	var expiresAt time.Time
-
-	for _, action := range plan.Actions {
-		actions = append(actions, action.ValueString())
-	}
-
-	for _, index := range plan.Indexes {
-		indexes = append(indexes, index.ValueString())
-	}
-
-	if !plan.ExpiresAt.IsNull() && plan.ExpiresAt.ValueString() != "" {
-		parsedExpiredAt, err := time.Parse("2006-01-02T15:04:05.000Z", plan.ExpiresAt.ValueString())
-
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error updating key",
-				"Could not parse expiresAt attribute",
-			)
-			return
-		}
-
-		expiresAt = parsedExpiredAt
-	}
-
 	updateKey := meilisearch.Key{
-		UID:         plan.UID.ValueString(),
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		Actions:     actions,
-		Indexes:     indexes,
-		ExpiresAt:   expiresAt,
 	}
 
 	// Update existing key
