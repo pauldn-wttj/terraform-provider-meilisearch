@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
@@ -15,8 +16,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &keyResource{}
-	_ resource.ResourceWithConfigure = &keyResource{}
+	_ resource.Resource                = &keyResource{}
+	_ resource.ResourceWithConfigure   = &keyResource{}
+	_ resource.ResourceWithImportState = &keyResource{}
 )
 
 // NewKeyResource is a helper function to simplify the provider implementation.
@@ -102,6 +104,15 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			},
 		},
 	}
+}
+
+// Configure adds the provider configured client to the resource.
+func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	r.client = req.ProviderData.(*meilisearch.Client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -300,11 +311,7 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	r.client = req.ProviderData.(*meilisearch.Client)
+func (r *keyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import UID and save to id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("uid"), req, resp)
 }
