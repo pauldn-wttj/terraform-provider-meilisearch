@@ -35,6 +35,7 @@ type keyDataSourceModel struct {
 	ExpiresAt   types.String   `tfsdk:"expires_at"`
 	CreatedAt   types.String   `tfsdk:"created_at"`
 	UpdatedAt   types.String   `tfsdk:"updated_at"`
+	ID          types.String   `tfsdk:"id"`
 }
 
 func (d *keyDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -72,6 +73,9 @@ func (d *keyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 				Computed: true,
 			},
 			"updated_at": schema.StringAttribute{
+				Computed: true,
+			},
+			"id": schema.StringAttribute{
 				Computed: true,
 			},
 		},
@@ -120,6 +124,8 @@ func (d *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	state = keyState
+
+	state.ID = types.StringValue("placeholder")
 
 	// Set state
 	diags = resp.State.Set(ctx, &state)
