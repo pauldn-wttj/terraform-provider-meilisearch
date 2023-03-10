@@ -280,6 +280,24 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state keyResourceModel
+
+	diags := req.State.Get(ctx, &state)
+
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Delete existing key
+	_, err := r.client.DeleteKey(state.UID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Deleting Meilisearch Key",
+			"Could not delete key, unexpected error: "+err.Error(),
+		)
+		return
+	}
 }
 
 // Configure adds the provider configured client to the resource.
