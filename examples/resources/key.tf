@@ -13,14 +13,14 @@ provider "meilisearch" {
 
 resource "meilisearch_key" "example" {
   name = "test"
-  description = "this is a description"
+  description = "this is a description updated"
   actions = ["*"]
   indexes = ["*"]
 }
 
-resource "meilisearch_key" "default_search" {
-  name = "Default Search API Key"
-  description = "Use it to search from the frontend"
-  actions = ["search"]
-  indexes = ["*"]
-}
+# resource "meilisearch_key" "default_search" {
+#   name = "Default Search API Key"
+#   description = "Use it to search from the frontend"
+#   actions = ["search"]
+#   indexes = ["*"]
+# }

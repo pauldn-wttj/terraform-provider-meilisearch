@@ -41,6 +41,7 @@ type keyResourceModel struct {
 	ExpiresAt   types.String   `tfsdk:"expires_at"`
 	CreatedAt   types.String   `tfsdk:"created_at"`
 	UpdatedAt   types.String   `tfsdk:"updated_at"`
+	ID          types.String   `tfsdk:"id"`
 }
 
 // Metadata returns the resource type name.
@@ -102,6 +103,9 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			"updated_at": schema.StringAttribute{
 				Computed: true,
 			},
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
 		},
 	}
 }
@@ -140,7 +144,7 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	if !plan.ExpiresAt.IsNull() && plan.ExpiresAt.ValueString() != "" {
-		parsedExpiredAt, err := time.Parse("2006-01-02T15:04:05.000Z", plan.ExpiresAt.ValueString())
+		parsedExpiredAt, err := time.Parse(time.RFC3339, plan.ExpiresAt.ValueString())
 
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -174,12 +178,14 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	plan.UID = types.StringValue(key.UID)
 	plan.Key = types.StringValue(key.Key)
-	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC850))
-	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC850))
+	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC3339))
+	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC3339))
 
 	if plan.ExpiresAt.IsNull() {
 		plan.ExpiresAt = types.StringNull()
 	}
+
+	plan.ID = types.StringValue("placeholder")
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -217,8 +223,8 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		Name:        types.StringValue(key.Name),
 		Description: types.StringValue(key.Description),
 		Key:         types.StringValue(key.Key),
-		CreatedAt:   types.StringValue(key.CreatedAt.Format(time.RFC850)),
-		UpdatedAt:   types.StringValue(key.UpdatedAt.Format(time.RFC850)),
+		CreatedAt:   types.StringValue(key.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt:   types.StringValue(key.UpdatedAt.Format(time.RFC3339)),
 	}
 
 	for _, action := range key.Actions {
@@ -232,10 +238,12 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	if key.ExpiresAt.IsZero() {
 		keyState.ExpiresAt = types.StringNull()
 	} else {
-		keyState.ExpiresAt = types.StringValue(key.ExpiresAt.Format(time.RFC850))
+		keyState.ExpiresAt = types.StringValue(key.ExpiresAt.Format(time.RFC3339))
 	}
 
 	state = keyState
+
+	state.ID = types.StringValue("placeholder")
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -274,12 +282,14 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	plan.UID = types.StringValue(key.UID)
 	plan.Key = types.StringValue(key.Key)
-	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC850))
-	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC850))
+	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC3339))
+	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC3339))
 
 	if plan.ExpiresAt.IsNull() {
 		plan.ExpiresAt = types.StringNull()
 	}
+
+	plan.ID = types.StringValue("placeholder")
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, plan)
