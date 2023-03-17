@@ -24,9 +24,9 @@ dev:
 clean:
 	docker-compose -f docker_compose/docker-compose.yml rm
 	docker volume rm -f docker_compose_meili_data
-	rm -f examples/resources/terraform.tfstate
-	rm -f examples/resources/terraform.tfstate.backup
-	rm -f examples/data-sources/terraform.tfstate
-	rm -f examples/data-sources/terraform.tfstate.backup
-	rm -f examples/provider/terraform.tfstate
-	rm -f examples/provider/terraform.tfstate.backup
+	rm -f examples/resources/**/terraform.tfstate
+	rm -f examples/resources/**/terraform.tfstate.backup
+	rm -f examples/data-sources/**/terraform.tfstate
+	rm -f examples/data-sources/**/terraform.tfstate.backup
+	rm -f examples/provider/**/terraform.tfstate
+	rm -f examples/provider/**/terraform.tfstate.backup

@@ -47,35 +47,45 @@ func (d *keyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 		Description: "Manages a Meilisearch API key.",
 		Attributes: map[string]schema.Attribute{
 			"uid": schema.StringAttribute{
+				Description: "UID (uuid v4) used by Meilisearch to identify the key.",
 				Required: true,
 			},
 			"name": schema.StringAttribute{
+				Description: "Name of the key.",
 				Computed: true,
 			},
 			"description": schema.StringAttribute{
+				Description: "Description of the key.",
 				Computed: true,
 			},
 			"key": schema.StringAttribute{
+				Description: "Actual key value.",
 				Computed: true,
 			},
 			"actions": schema.ListAttribute{
+				Description: "Actions permitted for the key.",
 				ElementType: types.StringType,
 				Computed:    true,
 			},
 			"indexes": schema.ListAttribute{
+				Description: "Indexes the key is authorized to act on (with the actions specified in the scope of the key).",
 				ElementType: types.StringType,
 				Computed:    true,
 			},
 			"expires_at": schema.StringAttribute{
+				Description: "Date and time when the key will expire (RFC3339)",
 				Computed: true,
 			},
 			"created_at": schema.StringAttribute{
+				Description: "Date and time when the key was created (RFC3339)",
 				Computed: true,
 			},
 			"updated_at": schema.StringAttribute{
+				Description: "Date and time when the key was last updated (RFC3339)",
 				Computed: true,
 			},
 			"id": schema.StringAttribute{
+				Description: "Placeholder identifier attribute.",
 				Computed: true,
 			},
 		},

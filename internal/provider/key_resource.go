@@ -55,6 +55,7 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 		Description: "Manages a Meilisearch API key.",
 		Attributes: map[string]schema.Attribute{
 			"uid": schema.StringAttribute{
+				Description: "UID (uuid v4) used by Meilisearch to identify the key.",
 				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
@@ -63,18 +64,22 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				},
 			},
 			"name": schema.StringAttribute{
+				Description: "Name of the key.",
 				Optional: true,
 			},
 			"description": schema.StringAttribute{
+				Description: "Description of the key.",
 				Optional: true,
 			},
 			"key": schema.StringAttribute{
+				Description: "Actual key value.",
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"actions": schema.ListAttribute{
+				Description: "Actions permitted for the key.",
 				ElementType: types.StringType,
 				Required:    true,
 				PlanModifiers: []planmodifier.List{
@@ -82,6 +87,7 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				},
 			},
 			"indexes": schema.ListAttribute{
+				Description: "Indexes the key is authorized to act on (with the actions specified in the scope of the key).",
 				ElementType: types.StringType,
 				Required:    true,
 				PlanModifiers: []planmodifier.List{
@@ -89,21 +95,25 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				},
 			},
 			"expires_at": schema.StringAttribute{
+				Description: "Date and time when the key will expire (RFC3339)",
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"created_at": schema.StringAttribute{
+				Description: "Date and time when the key was created (RFC3339)",
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"updated_at": schema.StringAttribute{
+				Description: "Date and time when the key was last updated (RFC3339)",
 				Computed: true,
 			},
 			"id": schema.StringAttribute{
+				Description: "Placeholder identifier attribute.",
 				Computed: true,
 			},
 		},

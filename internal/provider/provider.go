@@ -41,13 +41,13 @@ func (p *MeilisearchProvider) Schema(ctx context.Context, req provider.SchemaReq
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
-				MarkdownDescription: "Host of Meilisearch server",
-				Optional:            true,
+				Description: "Host of Meilisearch server. May also be provided via MEILISEARCH_HOST environment variable.",
+				Optional:    true,
 			},
 			"api_key": schema.StringAttribute{
-				MarkdownDescription: "Meilisearch API key",
-				Optional:            true,
-				Sensitive:           true,
+				Description: "Meilisearch master API key. May also be provided via MEILISEARCH_API_KEY environment variable.",
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 	}
