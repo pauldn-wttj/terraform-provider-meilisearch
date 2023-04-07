@@ -48,6 +48,7 @@ _This template repository is built on the [Terraform Plugin Framework](https://g
 - [Terraform](https://www.terraform.io/downloads.html) >= 1.0
 - [Go](https://golang.org/doc/install) >= 1.18
 - [Docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/) >= 3.7 for development
+- [golangci-lint](https://golangci-lint.run/usage/install/) for development
 
 ### Building The Provider
 
@@ -88,3 +89,17 @@ make testacc
 ```
 
 Tests are run against a Meilisearch Docker container to ease development, this will create a container on your machine.
+
+### Run linter
+
+Install [golangci-lint](https://golangci-lint.run/usage/install/) and run the linter:
+
+```shell
+golangci-lint run
+```
+
+Or using Docker:
+
+```shell
+docker run --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.52.2 golangci-lint run
+```
