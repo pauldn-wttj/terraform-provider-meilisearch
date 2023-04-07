@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/meilisearch/meilisearch-go"
 )
 
@@ -48,19 +49,19 @@ func (d *keyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			"uid": schema.StringAttribute{
 				Description: "UID (uuid v4) used by Meilisearch to identify the key.",
-				Required: true,
+				Required:    true,
 			},
 			"name": schema.StringAttribute{
 				Description: "Name of the key.",
-				Computed: true,
+				Computed:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the key.",
-				Computed: true,
+				Computed:    true,
 			},
 			"key": schema.StringAttribute{
 				Description: "Actual key value.",
-				Computed: true,
+				Computed:    true,
 			},
 			"actions": schema.ListAttribute{
 				Description: "Actions permitted for the key.",
@@ -74,19 +75,19 @@ func (d *keyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 			},
 			"expires_at": schema.StringAttribute{
 				Description: "Date and time when the key will expire (RFC3339)",
-				Computed: true,
+				Computed:    true,
 			},
 			"created_at": schema.StringAttribute{
 				Description: "Date and time when the key was created (RFC3339)",
-				Computed: true,
+				Computed:    true,
 			},
 			"updated_at": schema.StringAttribute{
 				Description: "Date and time when the key was last updated (RFC3339)",
-				Computed: true,
+				Computed:    true,
 			},
 			"id": schema.StringAttribute{
 				Description: "Placeholder identifier attribute.",
-				Computed: true,
+				Computed:    true,
 			},
 		},
 	}
@@ -146,10 +147,16 @@ func (d *keyDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *keyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+func (d *keyDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
 
-	d.client = req.ProviderData.(*meilisearch.Client)
+	var ok bool
+
+	d.client, ok = req.ProviderData.(*meilisearch.Client)
+
+	if !ok {
+		tflog.Error(ctx, "Type assertion failed when adding configured client to the data source")
+	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/meilisearch/meilisearch-go"
 )
 
@@ -56,8 +57,8 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 		Attributes: map[string]schema.Attribute{
 			"uid": schema.StringAttribute{
 				Description: "UID (uuid v4) used by Meilisearch to identify the key.",
-				Optional: true,
-				Computed: true,
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -65,15 +66,15 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			},
 			"name": schema.StringAttribute{
 				Description: "Name of the key.",
-				Optional: true,
+				Optional:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the key.",
-				Optional: true,
+				Optional:    true,
 			},
 			"key": schema.StringAttribute{
 				Description: "Actual key value.",
-				Computed: true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -96,37 +97,43 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			},
 			"expires_at": schema.StringAttribute{
 				Description: "Date and time when the key will expire (RFC3339)",
-				Optional: true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"created_at": schema.StringAttribute{
 				Description: "Date and time when the key was created (RFC3339)",
-				Computed: true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"updated_at": schema.StringAttribute{
 				Description: "Date and time when the key was last updated (RFC3339)",
-				Computed: true,
+				Computed:    true,
 			},
 			"id": schema.StringAttribute{
 				Description: "Placeholder identifier attribute.",
-				Computed: true,
+				Computed:    true,
 			},
 		},
 	}
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *keyResource) Configure(ctx context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
 
-	r.client = req.ProviderData.(*meilisearch.Client)
+	var ok bool
+
+	r.client, ok = req.ProviderData.(*meilisearch.Client)
+
+	if !ok {
+		tflog.Error(ctx, "Type assertion failed when adding configured client to the resource")
+	}
 }
 
 // Create creates the resource and sets the initial Terraform state.
