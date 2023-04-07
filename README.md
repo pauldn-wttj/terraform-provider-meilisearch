@@ -1,25 +1,55 @@
-# Terraform Provider Scaffolding (Terraform Plugin Framework)
+# Terraform Provider for Meilisearch.
 
-_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://www.terraform.io/docs/plugin/which-sdk.html) in the Terraform documentation for additional information._
+[![Release](https://img.shields.io/github/v/release/project0/terraform-provider-podman)](https://github.com/project0/terraform-provider-podman/releases)
+[![Registry](https://img.shields.io/badge/registry-doc%40latest-lightgrey?logo=terraform)](https://registry.terraform.io/providers/pauldn-wttj/meilisearch/latest/docs)
+[![License](https://img.shields.io/badge/license-Mozilla-blue.svg)](https://github.com/project0/terraform-provider-podman/blob/main/LICENSE)
 
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
+This Terraform provider implements resource management for Meilisearch.
 
-- A resource and a data source (`internal/provider/`),
-- Examples (`examples/`) and generated documentation (`docs/`),
-- Miscellaneous meta files.
+## Overview
 
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. Tutorials for creating Terraform providers can be found on the [HashiCorp Learn](https://learn.hashicorp.com/collections/terraform/providers-plugin-framework) platform. _Terraform Plugin Framework specific guides are titled accordingly._
+### Using the provider
 
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
+To use this provider, you must install it and provide authentication credentials:
 
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://www.terraform.io/docs/registry/providers/publishing.html) so that others can use it.
+```hcl
+terraform {
+  required_providers {
+    meilisearch = {
+      source = "pauldn-wttj/meilisearch"
+      version = "0.0.1"
+    }
+  }
+}
 
-## Requirements
+provider "meilisearch" {
+  host = "http://localhost:7700"
+  api_key = "T35T-M45T3R-K3Y"
+}
+```
+
+Alternatively, you may use environment variables `MEILISEARCH_API_KEY` and / or `MEILISEARCH_HOST` for authentication.
+The `MEILISEARCH_API_KEY` should have admin privileges since it may be used to create all kinds of resources.
+
+### Resources
+
+- `meilisearch_api_key`: create and manage API keys for Meilisearch.
+-
+### Data sources
+
+- `meilisearch_api_key`: read API keys for Meilisearch.
+
+## Development
+
+_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework)._
+
+### Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) >= 1.0
 - [Go](https://golang.org/doc/install) >= 1.18
+- [Docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/) >= 3.7 for development
 
-## Building The Provider
+### Building The Provider
 
 1. Clone the repository
 1. Enter the repository directory
@@ -29,7 +59,7 @@ Once you've written your provider, you'll want to [publish it on the Terraform R
 go install
 ```
 
-## Adding Dependencies
+### Adding Dependencies
 
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
 Please see the Go documentation for the most up to date information about using Go modules.
@@ -43,11 +73,7 @@ go mod tidy
 
 Then commit the changes to `go.mod` and `go.sum`.
 
-## Using the provider
-
-Fill this in for each provider
-
-## Developing the Provider
+### Developing the Provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
@@ -57,8 +83,8 @@ To generate or update documentation, run `go generate`.
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
 ```shell
 make testacc
 ```
+
+Tests are run against a Meilisearch Docker container to ease development, this will create a container on your machine.
