@@ -43,7 +43,7 @@ resource "meilisearch_key" "example" {
 
 - `created_at` (String) Date and time when the key was created (RFC3339)
 - `id` (String) Placeholder identifier attribute.
-- `key` (String) Actual key value.
+- `key` (String, Sensitive) Actual key value.
 - `updated_at` (String) Date and time when the key was last updated (RFC3339)
 
 ## Import
