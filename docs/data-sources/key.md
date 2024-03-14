@@ -30,5 +30,3 @@ Manages a Meilisearch API key.
 - `key` (String) Actual key value.
 - `name` (String) Name of the key.
 - `updated_at` (String) Date and time when the key was last updated (RFC3339)
-
-
