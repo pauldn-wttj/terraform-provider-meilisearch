@@ -75,6 +75,7 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			"key": schema.StringAttribute{
 				Description: "Actual key value.",
 				Computed:    true,
+				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
