@@ -1,8 +1,8 @@
 # Terraform Provider for Meilisearch.
 
-[![Release](https://img.shields.io/github/v/release/project0/terraform-provider-podman)](https://github.com/project0/terraform-provider-podman/releases)
+[![Release](https://img.shields.io/github/v/release/pauldn-wttj/terraform-provider-meilisearch)](https://github.com/pauldn-wttj/terraform-provider-meilisearch/releases)
 [![Registry](https://img.shields.io/badge/registry-doc%40latest-lightgrey?logo=terraform)](https://registry.terraform.io/providers/pauldn-wttj/meilisearch/latest/docs)
-[![License](https://img.shields.io/badge/license-Mozilla-blue.svg)](https://github.com/project0/terraform-provider-podman/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-Mozilla-blue.svg)](https://github.com/pauldn-wttj/terraform-provider-meilisearch/blob/main/LICENSE)
 
 This Terraform provider implements resource management for Meilisearch.
 
