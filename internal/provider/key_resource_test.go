@@ -4,9 +4,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/meilisearch/meilisearch-go"
 )
 
 func TestAccKeyResource(t *testing.T) {
+	client := meilisearch.NewClient(meilisearch.ClientConfig{
+		Host:   "http://localhost:7700",
+		APIKey: "T35T-M45T3R-K3Y",
+	})
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -80,7 +87,30 @@ resource "meilisearch_key" "test" {
 					resource.TestCheckResourceAttrSet("meilisearch_key.test", "updated_at"),
 				),
 			},
+			// Re-creating the key deleted outside of Terraform testing
+			{
+				PreConfig: func() {
+					_, err := client.DeleteKey("66666666-7777-8888-9999-000000000000")
+					if err != nil {
+						return
+					}
+				},
+				Config: providerConfig + `
+resource "meilisearch_key" "test" {
+	uid = "66666666-7777-8888-9999-000000000000"
+	name = "terraform_test_api_key"
+	description = "Terraform acceptance tests API key updated"
+	actions = ["search"]
+  indexes = ["test_index_1", "test_index_2"]
+	expires_at = "2042-04-02T00:42:42Z"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
+			},
 		},
-		// Delete testing automatically occurs in TestCase
 	})
 }

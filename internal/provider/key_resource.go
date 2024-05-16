@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -228,11 +229,16 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	// Get refreshed key value from Meilisearch
 	key, err := r.client.GetKey(state.UID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Reading Meilisearch Key",
-			"Could not read Meilisearch key ID "+state.UID.ValueString()+": "+err.Error(),
-		)
-		return
+		if strings.Contains(err.Error(), "api_key_not_found,") {
+			resp.State.RemoveResource(ctx)
+			return
+		} else {
+			resp.Diagnostics.AddError(
+				"Error Reading Meilisearch Key",
+				"Could not read Meilisearch key ID "+state.UID.ValueString()+": "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Overwrite items with refreshed state
