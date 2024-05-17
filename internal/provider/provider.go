@@ -156,6 +156,7 @@ func (p *MeilisearchProvider) Resources(ctx context.Context) []func() resource.R
 func (p *MeilisearchProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewKeyDataSource,
+		NewIndexDataSource,
 	}
 }
 
