@@ -80,6 +80,29 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
+Don't forget that if you want to use a local binary for a Terraform provider, you need to add the following block to your `~/.terraformrc` file:
+```
+provider_installation {
+  dev_overrides {
+      "terraform.io/pauldn-wttj/meilisearch" = "<replace/with/your/gopath/bin>"
+  }
+
+  direct {}
+}
+```
+
+before using it in a `.tf` file such as:
+
+```
+terraform {
+  required_providers {
+    meilisearch = {
+      source = "terraform.io/pauldn-wttj/meilisearch"
+    }
+  }
+}
+```
+
 To generate or update documentation, run `go generate`.
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
@@ -88,7 +111,11 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 make testacc
 ```
 
-Tests are run against a Meilisearch Docker container to ease development, this will create a container on your machine.
+Tests are run against a Meilisearch Docker container to ease development (see `docker_compose/` folder). The task will:
+- Start a Docker container running a Meilisearch instance
+- Seed data on the Meilisearch instance
+- Run Terraform tests from the provider
+- Clean up Docker volume
 
 ### Run linter
 
