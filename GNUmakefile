@@ -5,7 +5,7 @@ build:
 
 testacc:
 	echo "Starting Meilisearch and waiting until it's ready"
-	docker-compose -f docker_compose/docker-compose.yml up -d
+	docker compose -f docker_compose/docker-compose.yml up -d
 	sleep 5
 
 	echo "Creating test resources"
@@ -15,14 +15,14 @@ testacc:
 	TF_ACC=1 go test -count=1 -v ./internal/provider -timeout 120m
 
 	echo "Stopping Meilisearch and cleaning"
-	docker-compose -f docker_compose/docker-compose.yml down
+	docker compose -f docker_compose/docker-compose.yml down
 	docker volume rm -f docker_compose_meili_data
 
 dev:
-	docker-compose -f docker_compose/docker-compose.yml up
+	docker compose -f docker_compose/docker-compose.yml up
 
 clean:
-	docker-compose -f docker_compose/docker-compose.yml rm
+	docker compose -f docker_compose/docker-compose.yml rm
 	docker volume rm -f docker_compose_meili_data
 	rm -f examples/resources/**/terraform.tfstate
 	rm -f examples/resources/**/terraform.tfstate.backup
