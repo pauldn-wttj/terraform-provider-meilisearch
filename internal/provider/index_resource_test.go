@@ -28,13 +28,14 @@ func TestAccIndexResource(t *testing.T) {
 				Config: providerConfig + `
 resource "meilisearch_index" "test" {
 	uid = "abcdef"
+	primary_key = "toto"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify all attributes are set
 					resource.TestCheckResourceAttr("meilisearch_index.test", "uid", "abcdef"),
+					resource.TestCheckResourceAttr("meilisearch_index.test", "primary_key", "toto"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("meilisearch_index.test", "primary_key"),
 					resource.TestCheckResourceAttrSet("meilisearch_index.test", "created_at"),
 					resource.TestCheckResourceAttrSet("meilisearch_index.test", "updated_at"),
 				),

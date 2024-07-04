@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/meilisearch/meilisearch-go"
@@ -50,10 +52,13 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"uid": schema.StringAttribute{
 				Description: "Unique identifier of the index.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"primary_key": schema.StringAttribute{
 				Description: "Primary key of the index (`null` if not specified and if no documents have been added yet, see [official documentation](https://www.meilisearch.com/docs/learn/core_concepts/primary_key#meilisearch-guesses-your-primary-key) for more details).",
-				Computed:    true,
+				Required:    true,
 			},
 			"created_at": schema.StringAttribute{
 				Description: "Date and time when the key was created (RFC3339)",
@@ -200,30 +205,30 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *indexResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// // Retrieve values from plan
-	// var plan indexResourceModel
+	// Retrieve values from plan
+	var plan indexResourceModel
 
-	// diags := req.Plan.Get(ctx, &plan)
+	diags := req.Plan.Get(ctx, &plan)
 
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// updateKey := meilisearch.Key{
-	// 	Name:        plan.Name.ValueString(),
-	// 	Description: plan.Description.ValueString(),
-	// }
+	updateIndex := meilisearch.Index{
+		UID:         plan.UID.ValueString(),
+		PrimaryKey:  plan.PrimaryKey.ValueString(),
+	}
 
-	// // Update existing key
-	// key, err := r.client.UpdateKey(plan.UID.ValueString(), &updateKey)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error Updating Meilisearch Key",
-	// 		"Could not update key, unexpected error: "+err.Error(),
-	// 	)
-	// 	return
-	// }
+	// Update existing key
+	index, err := r.client.UpdateIndexRequest(plan.UID.ValueString(), &updateIndex)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Updating Meilisearch Key",
+			"Could not update key, unexpected error: "+err.Error(),
+		)
+		return
+	}
 
 	// plan.UID = types.StringValue(key.UID)
 	// plan.Key = types.StringValue(key.Key)
