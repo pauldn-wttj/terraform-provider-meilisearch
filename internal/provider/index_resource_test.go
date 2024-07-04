@@ -2,7 +2,9 @@ package provider
 
 import (
 	"testing"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/meilisearch/meilisearch-go"
 )
 
@@ -39,6 +41,55 @@ resource "meilisearch_index" "test" {
 					resource.TestCheckResourceAttrSet("meilisearch_index.test", "created_at"),
 					resource.TestCheckResourceAttrSet("meilisearch_index.test", "updated_at"),
 				),
+			},
+			{
+				Config: providerConfig + `
+resource "meilisearch_index" "test" {
+	uid = "abcdef"
+	primary_key = "totoa"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("meilisearch_index.test", "Replace"),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("meilisearch_index.test", "primary_key", "totoa"),
+				),
+			},
+			{
+				Config: providerConfig + `
+resource "meilisearch_index" "test" {
+	uid = "abcdefg"
+	primary_key = "totoa"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("meilisearch_index.test", "Replace"),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("meilisearch_index.test", "uid", "abcdefg"),
+				),
+			},
+			{
+				PreConfig: func() {
+					indexConfig := meilisearch.IndexConfig{
+						Uid:        "test_import",
+						PrimaryKey: "test_import",
+					}
+					_, err := client.CreateIndex(&indexConfig)
+					if err != nil {
+						return
+					}
+				},
+				ResourceName:            "meilisearch_index.imported_index",
+				ImportStateId:           "test_import",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"id"},
 			},
 		},
 	})

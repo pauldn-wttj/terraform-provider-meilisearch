@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -59,6 +60,9 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"primary_key": schema.StringAttribute{
 				Description: "Primary key of the index (`null` if not specified and if no documents have been added yet, see [official documentation](https://www.meilisearch.com/docs/learn/core_concepts/primary_key#meilisearch-guesses-your-primary-key) for more details).",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"created_at": schema.StringAttribute{
 				Description: "Date and time when the key was created (RFC3339)",
@@ -185,10 +189,10 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	// Overwrite items with refreshed state
 	indexState := indexResourceModel{
-		UID:         types.StringValue(index.UID),
-		PrimaryKey:  types.StringValue(index.PrimaryKey),
-		CreatedAt:   types.StringValue(index.CreatedAt.Format(time.RFC3339)),
-		UpdatedAt:   types.StringValue(index.UpdatedAt.Format(time.RFC3339)),
+		UID:        types.StringValue(index.UID),
+		PrimaryKey: types.StringValue(index.PrimaryKey),
+		CreatedAt:  types.StringValue(index.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt:  types.StringValue(index.UpdatedAt.Format(time.RFC3339)),
 	}
 
 	state = indexState
@@ -206,69 +210,28 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *indexResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan indexResourceModel
+}
 
-	diags := req.Plan.Get(ctx, &plan)
+// Delete deletes the resource and removes the Terraform state on success.
+func (r *indexResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state indexResourceModel
+
+	diags := req.State.Get(ctx, &state)
 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	updateIndex := meilisearch.Index{
-		UID:         plan.UID.ValueString(),
-		PrimaryKey:  plan.PrimaryKey.ValueString(),
-	}
-
-	// Update existing key
-	index, err := r.client.UpdateIndexRequest(plan.UID.ValueString(), &updateIndex)
+	// Delete existing index
+	_, err := r.client.DeleteIndex(state.UID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Updating Meilisearch Key",
-			"Could not update key, unexpected error: "+err.Error(),
+			"Error Deleting Meilisearch Index",
+			"Could not delete index, unexpected error: "+err.Error(),
 		)
 		return
 	}
-
-	// plan.UID = types.StringValue(key.UID)
-	// plan.Key = types.StringValue(key.Key)
-	// plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC3339))
-	// plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC3339))
-
-	// if plan.ExpiresAt.IsNull() {
-	// 	plan.ExpiresAt = types.StringNull()
-	// }
-
-	// plan.ID = types.StringValue("placeholder")
-
-	// // Set refreshed state
-	// diags = resp.State.Set(ctx, plan)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-}
-
-// Delete deletes the resource and removes the Terraform state on success.
-func (r *indexResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// var state indexResourceModel
-
-	// diags := req.State.Get(ctx, &state)
-
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-
-	// // Delete existing key
-	// _, err := r.client.DeleteKey(state.UID.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error Deleting Meilisearch Key",
-	// 		"Could not delete key, unexpected error: "+err.Error(),
-	// 	)
-	// 	return
-	// }
 }
 
 func (r *indexResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
