@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 	"time"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -164,46 +163,30 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	// Get refreshed key value from Meilisearch
-	key, err := r.client.GetKey(state.UID.ValueString())
+	// Get refreshed index value from Meilisearch
+	index, err := r.client.GetIndex(state.UID.ValueString())
 	if err != nil {
-		if strings.Contains(err.Error(), "api_key_not_found,") {
+		if strings.Contains(err.Error(), "index_not_found,") {
 			resp.State.RemoveResource(ctx)
 			return
 		} else {
 			resp.Diagnostics.AddError(
-				"Error Reading Meilisearch Key",
-				"Could not read Meilisearch key ID "+state.UID.ValueString()+": "+err.Error(),
+				"Error Reading Meilisearch Index",
+				"Could not read Meilisearch index ID "+state.UID.ValueString()+": "+err.Error(),
 			)
 			return
 		}
 	}
 
 	// Overwrite items with refreshed state
-	keyState := indexResourceModel{
-		UID:         types.StringValue(key.UID),
-		Name:        types.StringValue(key.Name),
-		Description: types.StringValue(key.Description),
-		Key:         types.StringValue(key.Key),
-		CreatedAt:   types.StringValue(key.CreatedAt.Format(time.RFC3339)),
-		UpdatedAt:   types.StringValue(key.UpdatedAt.Format(time.RFC3339)),
+	indexState := indexResourceModel{
+		UID:         types.StringValue(index.UID),
+		PrimaryKey:  types.StringValue(index.PrimaryKey),
+		CreatedAt:   types.StringValue(index.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt:   types.StringValue(index.UpdatedAt.Format(time.RFC3339)),
 	}
 
-	for _, action := range key.Actions {
-		keyState.Actions = append(keyState.Actions, types.StringValue(action))
-	}
-
-	for _, indexes := range key.Indexes {
-		keyState.Indexes = append(keyState.Indexes, types.StringValue(indexes))
-	}
-
-	if key.ExpiresAt.IsZero() {
-		keyState.ExpiresAt = types.StringNull()
-	} else {
-		keyState.ExpiresAt = types.StringValue(key.ExpiresAt.Format(time.RFC3339))
-	}
-
-	state = keyState
+	state = indexState
 
 	state.ID = types.StringValue("placeholder")
 
@@ -217,70 +200,70 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *indexResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Retrieve values from plan
-	var plan indexResourceModel
+	// // Retrieve values from plan
+	// var plan indexResourceModel
 
-	diags := req.Plan.Get(ctx, &plan)
+	// diags := req.Plan.Get(ctx, &plan)
 
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// resp.Diagnostics.Append(diags...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 
-	updateKey := meilisearch.Key{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-	}
+	// updateKey := meilisearch.Key{
+	// 	Name:        plan.Name.ValueString(),
+	// 	Description: plan.Description.ValueString(),
+	// }
 
-	// Update existing key
-	key, err := r.client.UpdateKey(plan.UID.ValueString(), &updateKey)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Updating Meilisearch Key",
-			"Could not update key, unexpected error: "+err.Error(),
-		)
-		return
-	}
+	// // Update existing key
+	// key, err := r.client.UpdateKey(plan.UID.ValueString(), &updateKey)
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Error Updating Meilisearch Key",
+	// 		"Could not update key, unexpected error: "+err.Error(),
+	// 	)
+	// 	return
+	// }
 
-	plan.UID = types.StringValue(key.UID)
-	plan.Key = types.StringValue(key.Key)
-	plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC3339))
-	plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC3339))
+	// plan.UID = types.StringValue(key.UID)
+	// plan.Key = types.StringValue(key.Key)
+	// plan.CreatedAt = types.StringValue(key.CreatedAt.Format(time.RFC3339))
+	// plan.UpdatedAt = types.StringValue(key.UpdatedAt.Format(time.RFC3339))
 
-	if plan.ExpiresAt.IsNull() {
-		plan.ExpiresAt = types.StringNull()
-	}
+	// if plan.ExpiresAt.IsNull() {
+	// 	plan.ExpiresAt = types.StringNull()
+	// }
 
-	plan.ID = types.StringValue("placeholder")
+	// plan.ID = types.StringValue("placeholder")
 
-	// Set refreshed state
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// // Set refreshed state
+	// diags = resp.State.Set(ctx, plan)
+	// resp.Diagnostics.Append(diags...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *indexResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state indexResourceModel
+	// var state indexResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	// diags := req.State.Get(ctx, &state)
 
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// resp.Diagnostics.Append(diags...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 
-	// Delete existing key
-	_, err := r.client.DeleteKey(state.UID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Deleting Meilisearch Key",
-			"Could not delete key, unexpected error: "+err.Error(),
-		)
-		return
-	}
+	// // Delete existing key
+	// _, err := r.client.DeleteKey(state.UID.ValueString())
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Error Deleting Meilisearch Key",
+	// 		"Could not delete key, unexpected error: "+err.Error(),
+	// 	)
+	// 	return
+	// }
 }
 
 func (r *indexResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
