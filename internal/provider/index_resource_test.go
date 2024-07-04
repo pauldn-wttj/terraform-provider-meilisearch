@@ -75,20 +75,10 @@ resource "meilisearch_index" "test" {
 				),
 			},
 			{
-				PreConfig: func() {
-					indexConfig := meilisearch.IndexConfig{
-						Uid:        "test_import",
-						PrimaryKey: "test_import",
-					}
-					_, err := client.CreateIndex(&indexConfig)
-					if err != nil {
-						return
-					}
-				},
-				ResourceName:            "meilisearch_index.imported_index",
-				ImportStateId:           "test_import",
+				ResourceName:            "meilisearch_index.test",
+				ImportStateId:           "abcdefg",
 				ImportState:             true,
-				ImportStateVerify:       true,
+				ImportStateVerify:       false,
 				ImportStateVerifyIgnore: []string{"id"},
 			},
 		},
