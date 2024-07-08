@@ -48,7 +48,7 @@ func (r *indexResource) Metadata(_ context.Context, req resource.MetadataRequest
 // Schema defines the schema for the resource.
 func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a Meilisearch API key.",
+		Description: "Manages a Meilisearch Index.",
 		Attributes: map[string]schema.Attribute{
 			"uid": schema.StringAttribute{
 				Description: "Unique identifier of the index.",
