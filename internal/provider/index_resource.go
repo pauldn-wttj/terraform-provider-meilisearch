@@ -209,7 +209,7 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *indexResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Retrieve values from plan
+	// Not implemented for now, no attributes can be changed
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
