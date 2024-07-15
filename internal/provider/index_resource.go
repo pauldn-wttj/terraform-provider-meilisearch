@@ -134,7 +134,6 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if waitTask.Status == "succeeded" {
 		index, err := r.client.GetIndex(createIndexConfig.Uid)
 
-		// AJouter la gestion d'erreur
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error fetching index data",

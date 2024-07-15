@@ -40,5 +40,5 @@ Import is supported using the following syntax:
 
 ```shell
 # Index can be imported by specifying the UID used by Meilisearch.
-terraform import meilisearch_index.example abcdef
+terraform import meilisearch_index.example index-uid
 ```
