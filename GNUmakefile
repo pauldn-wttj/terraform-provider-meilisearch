@@ -3,7 +3,7 @@ default: build
 build:
 	go install .
 
-testacc:
+testacc: clean
 	echo "Starting Meilisearch and waiting until it's ready"
 	docker compose -f docker_compose/docker-compose.yml up -d
 	sleep 5
