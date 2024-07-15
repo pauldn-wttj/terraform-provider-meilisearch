@@ -34,10 +34,12 @@ The `MEILISEARCH_API_KEY` should have admin privileges since it may be used to c
 ### Resources
 
 - `meilisearch_api_key`: create and manage API keys for Meilisearch.
+- `meilisearch_index`: create and manage an index in Meilisearch.
 
 ### Data sources
 
 - `meilisearch_api_key`: read API keys for Meilisearch.
+- `meilisearch_index`: read a Meilisearch index.
 
 ## Development
 
