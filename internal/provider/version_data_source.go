@@ -22,7 +22,7 @@ func NewVersionDataSource() datasource.DataSource {
 
 // versionDataSource defines the data source implementation.
 type versionDataSource struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 }
 
 type versionDataSourceModel struct {
@@ -63,7 +63,7 @@ func (d *versionDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 func (d *versionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state versionDataSourceModel
 
-	version, err := d.client.GetVersion()
+	version, err := d.client.Version()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Meilisearch Version",
@@ -99,7 +99,7 @@ func (d *versionDataSource) Configure(ctx context.Context, req datasource.Config
 
 	var ok bool
 
-	d.client, ok = req.ProviderData.(*meilisearch.Client)
+	d.client, ok = req.ProviderData.(meilisearch.ServiceManager)
 
 	if !ok {
 		tflog.Error(ctx, "Type assertion failed when adding configured client to the data source")

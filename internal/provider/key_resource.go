@@ -30,7 +30,7 @@ func NewKeyResource() resource.Resource {
 
 // keyResource is the resource implementation.
 type keyResource struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 }
 
 type keyResourceModel struct {
@@ -131,7 +131,7 @@ func (r *keyResource) Configure(ctx context.Context, req resource.ConfigureReque
 
 	var ok bool
 
-	r.client, ok = req.ProviderData.(*meilisearch.Client)
+	r.client, ok = req.ProviderData.(meilisearch.ServiceManager)
 
 	if !ok {
 		tflog.Error(ctx, "Type assertion failed when adding configured client to the resource")

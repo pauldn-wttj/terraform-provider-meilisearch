@@ -23,7 +23,7 @@ func NewKeyDataSource() datasource.DataSource {
 
 // keyDataSource defines the data source implementation.
 type keyDataSource struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 }
 
 type keyDataSourceModel struct {
@@ -154,7 +154,7 @@ func (d *keyDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 
 	var ok bool
 
-	d.client, ok = req.ProviderData.(*meilisearch.Client)
+	d.client, ok = req.ProviderData.(meilisearch.ServiceManager)
 
 	if !ok {
 		tflog.Error(ctx, "Type assertion failed when adding configured client to the data source")

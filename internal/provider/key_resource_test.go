@@ -9,10 +9,7 @@ import (
 )
 
 func TestAccKeyResource(t *testing.T) {
-	client := meilisearch.NewClient(meilisearch.ClientConfig{
-		Host:   "http://localhost:7700",
-		APIKey: "T35T-M45T3R-K3Y",
-	})
+	client := meilisearch.New("http://localhost:7700", meilisearch.WithAPIKey("T35T-M45T3R-K3Y"))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
