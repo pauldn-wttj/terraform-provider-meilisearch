@@ -134,10 +134,7 @@ func (p *MeilisearchProvider) Configure(ctx context.Context, req provider.Config
 	tflog.Debug(ctx, "Creating Meilisearch client")
 
 	// Create a new Meilisearch client using the configuration values
-	client := meilisearch.NewClient(meilisearch.ClientConfig{
-		Host:   host,
-		APIKey: apiKey,
-	})
+	client := meilisearch.New(host, meilisearch.WithAPIKey(apiKey))
 
 	// Make the Meilisearch client available during DataSource and Resource
 	// type Configure methods.

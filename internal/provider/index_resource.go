@@ -29,7 +29,7 @@ func NewIndexResource() resource.Resource {
 
 // indexResource is the resource implementation.
 type indexResource struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 }
 
 type indexResourceModel struct {
@@ -88,7 +88,7 @@ func (r *indexResource) Configure(ctx context.Context, req resource.ConfigureReq
 
 	var ok bool
 
-	r.client, ok = req.ProviderData.(*meilisearch.Client)
+	r.client, ok = req.ProviderData.(meilisearch.ServiceManager)
 
 	if !ok {
 		tflog.Error(ctx, "Type assertion failed when adding configured client to the resource")
@@ -121,7 +121,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	waitTask, err := r.client.WaitForTask(task.TaskUID)
+	waitTask, err := r.client.WaitForTask(task.TaskUID, time.Duration(5)*time.Second)
 
 	if err != nil {
 		resp.Diagnostics.AddError(

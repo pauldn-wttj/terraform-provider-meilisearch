@@ -23,7 +23,7 @@ func NewIndexDataSource() datasource.DataSource {
 
 // indexDataSource defines the data source implementation.
 type indexDataSource struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 }
 
 type indexDataSourceModel struct {
@@ -119,7 +119,7 @@ func (d *indexDataSource) Configure(ctx context.Context, req datasource.Configur
 
 	var ok bool
 
-	d.client, ok = req.ProviderData.(*meilisearch.Client)
+	d.client, ok = req.ProviderData.(meilisearch.ServiceManager)
 
 	if !ok {
 		tflog.Error(ctx, "Type assertion failed when adding configured client to the data source")
