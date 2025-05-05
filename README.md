@@ -1,8 +1,8 @@
 # Terraform Provider for Meilisearch.
 
-[![Release](https://img.shields.io/github/v/release/pauldn-wttj/terraform-provider-meilisearch)](https://github.com/pauldn-wttj/terraform-provider-meilisearch/releases)
-[![Registry](https://img.shields.io/badge/registry-doc%40latest-lightgrey?logo=terraform)](https://registry.terraform.io/providers/pauldn-wttj/meilisearch/latest/docs)
-[![License](https://img.shields.io/badge/license-Mozilla-blue.svg)](https://github.com/pauldn-wttj/terraform-provider-meilisearch/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/paulden/terraform-provider-meilisearch)](https://github.com/paulden/terraform-provider-meilisearch/releases)
+[![Registry](https://img.shields.io/badge/registry-doc%40latest-lightgrey?logo=terraform)](https://registry.terraform.io/providers/paulden/meilisearch/latest/docs)
+[![License](https://img.shields.io/badge/license-Mozilla-blue.svg)](https://github.com/paulden/terraform-provider-meilisearch/blob/main/LICENSE)
 
 This Terraform provider implements resource management for Meilisearch.
 
@@ -16,7 +16,7 @@ To use this provider, you must install it and provide authentication credentials
 terraform {
   required_providers {
     meilisearch = {
-      source = "pauldn-wttj/meilisearch"
+      source = "paulden/meilisearch"
       version = "0.0.1"
     }
   }
@@ -86,7 +86,7 @@ Don't forget that if you want to use a local binary for a Terraform provider, yo
 ```
 provider_installation {
   dev_overrides {
-      "terraform.io/pauldn-wttj/meilisearch" = "<replace/with/your/gopath/bin>"
+      "terraform.io/paulden/meilisearch" = "<replace/with/your/gopath/bin>"
   }
 
   direct {}
@@ -99,7 +99,7 @@ before using it in a `.tf` file such as:
 terraform {
   required_providers {
     meilisearch = {
-      source = "terraform.io/pauldn-wttj/meilisearch"
+      source = "terraform.io/paulden/meilisearch"
     }
   }
 }
